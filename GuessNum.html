@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>數字猜測遊戲</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>1-100 終極密碼</h1>
+      <div class="range-display"></div>
+      <div class="current-guess"></div>
+      <div class="keypad">
+        <button data-val="7">7</button>
+        <button data-val="8">8</button>
+        <button data-val="9">9</button>
+        <button data-val="4">4</button>
+        <button data-val="5">5</button>
+        <button data-val="6">6</button>
+        <button data-val="1">1</button>
+        <button data-val="2">2</button>
+        <button data-val="3">3</button>
+        <button class="clear">清除</button>
+        <button data-val="0">0</button>
+        <button class="guess">猜</button>
+      </div>
+      <div class="start">
+        <button class="start-game">Game start</button>
+        <button class="seeAnswer">SeeAns</button>
+      </div>
+    </div>
+    <script>
+      const startGame = document.querySelector(".start-game");
+      const keypads = document.querySelectorAll(
+        ".keypad button, .start .seeAnswer"
+      );
+      const clearBtn = document.querySelector(".clear");
+      const inputVal = document.querySelector(".current-guess");
+      const rangeDisplay = document.querySelector(".range-display");
+      const guessBtn = document.querySelector(".guess");
+      const seeAnswerBtn = document.querySelector(".seeAnswer");
+
+      let isGameStarted = false;
+
+      let minNum = 1;
+      let maxNum = 100;
+      let GuessNum;
+      rangeDisplay.textContent = `${minNum}-${maxNum}`;
+
+      // 函數用於處理按鈕按下、鬆開、離開事件
+      const handleButtonInteraction = (btn, isGameStart) => {
+        btn.addEventListener("mousedown", () => {
+          if (isGameStart) btn.style.backgroundColor = "red";
+        });
+        btn.addEventListener("mouseup", () => {
+          if (isGameStart) btn.style.backgroundColor = "";
+        });
+        btn.addEventListener("mouseleave", () => {
+          if (isGameStart) btn.style.backgroundColor = "";
+        });
+        btn.addEventListener("click", () => {
+          if (btn.dataset.val) {
+            if (isNaN(parseInt(inputVal.textContent))) {
+              inputVal.textContent = "";
+            }
+            //如果按下有數字的數字鍵，針對畫面對數字0輸入的處理
+            // if (parseInt(inputVal.textContent + btn.dataset.val) > 100) {
+            //   alert(`請輸入1-100有效範圍的數字`);
+            //   inputVal.textContent = "";
+            // } else {
+            //   if (inputVal.textContent == "" && btn.dataset.val != "0") {
+            //     inputVal.textContent += btn.dataset.val;
+            //   } else if (inputVal.textContent != "") {
+            //     inputVal.textContent += btn.dataset.val;
+            //   }
+            // }
+
+            if (inputVal.textContent == "" && btn.dataset.val != "0") {
+              inputVal.textContent += btn.dataset.val;
+            } else if (inputVal.textContent != "") {
+              inputVal.textContent += btn.dataset.val;
+              setTimeout(() => {
+                if (parseInt(inputVal.textContent) > 100) {
+                  alert(`請輸入1-100有效範圍的數字`);
+                  inputVal.textContent = "";
+                }
+              }, 100);
+            }
+          }
+        });
+      };
+
+      clearBtn.addEventListener("click", () => {
+        //註冊清除能力給clearBtn按鈕
+        inputVal.textContent = "";
+      });
+
+      seeAnswerBtn.addEventListener("click", () => {
+        inputVal.textContent = `答案是${GuessNum}`;
+      });
+
+      guessBtn.addEventListener("click", () => {
+        //按下"猜"按鈕後
+        const myguessNum = parseInt(inputVal.textContent);
+        if (isNaN(myguessNum)) {
+          // alert(`請輸入${minNum}-${maxNum}有效範圍的正整數`);
+          inputVal.textContent = `請輸入1-100範圍內整數`;
+          return;
+        }
+        if (myguessNum === GuessNum) {
+          // alert(`恭喜猜對，答案是${myguessNum}，按下Gamestart，重新開始`);
+          inputVal.textContent = `恭喜猜對!!答案是${myguessNum}`;
+          setTimeout(() => {
+            inputVal.textContent = "按下Game start重新開始";
+            rangeDisplay.textContent = `恭喜猜對!!答案是${myguessNum}`;
+            setTimeout(() => {
+              location.reload(true);
+            }, 1000); // 延遲刷新頁面
+          }, 1000);
+        } else if (myguessNum < GuessNum) {
+          minNum = myguessNum + 1;
+          rangeDisplay.textContent = `${minNum}-${maxNum}`;
+          inputVal.textContent = "";
+        } else {
+          maxNum = myguessNum - 1;
+          rangeDisplay.textContent = `${minNum}-${maxNum}`;
+          inputVal.textContent = "";
+        }
+      });
+
+      handleButtonInteraction(startGame, true); //初始化startGame按鈕註冊按下按鈕變色效果
+
+      startGame.addEventListener("click", () => {
+        //第一次按下startGame為每個Keypad鍵加入初始化
+        if (!isGameStarted) {
+          isGameStarted = true; //按下遊戲開始
+          keypads.forEach((btn) => {
+            btn.style.opacity = 1; // 顯示所有按鈕
+            handleButtonInteraction(btn, isGameStarted); //為每個按鈕註冊輸入數字能力和按鈕變色效果
+          });
+        }
+        GuessNum = Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
+        minNum = 1;
+        maxNum = 100;
+        rangeDisplay.textContent = `${minNum}-${maxNum}`;
+        inputVal.textContent = "";
+      });
+    </script>
+  </body>
+</html>
